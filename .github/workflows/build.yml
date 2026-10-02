@@ -75,7 +75,7 @@ jobs:
           make -j$(nproc)
 
       - name: Upload bin
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Newifi-D2-Firmware
           path: bin/targets/ramips/mt7621/*.bin
