@@ -9,9 +9,6 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
-        with:
-          repository: Isam236236-lab/ledenewifid2
-          ref: master
 
       - name: Prepare env & preload Mihomo
         run: |
