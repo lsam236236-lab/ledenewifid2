@@ -10,13 +10,10 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v3
 
-      - name: Prepare env & preload Mihomo
+      - name: Prepare env
         run: |
           sudo apt update
           sudo apt install -y build-essential libncurses5-dev git python3 python3-pip unzip curl rsync wget
-          mkdir -p files/etc/openclash/core
-          wget -O files/etc/openclash/core/clash https://mirror.ghproxy.com/https://github.com/MetaCubeX/mihomo/releases/download/v1.18.0/mihomo-linux-mipsel-softfloat-v1.18.0
-          chmod +x files/etc/openclash/core/clash
           cat > .config <<'EOF'
           CONFIG_TARGET_ramips=y
           CONFIG_TARGET_ramips_mt7621=y
