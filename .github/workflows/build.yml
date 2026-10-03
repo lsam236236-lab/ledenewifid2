@@ -8,6 +8,15 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 512
+          swap-size-mb: 4096
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+
       - name: Checkout source
         uses: actions/checkout@v4
 
@@ -15,6 +24,11 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y build-essential libncurses-dev gawk flex bison git gettext libssl-dev xsltproc rsync wget unzip python3 python3-pip python3-setuptools python3-dev ccache libelf-dev
+
+      - name: Update & Install feeds
+        run: |
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
 
       - name: Generate config
         run: |
@@ -26,12 +40,23 @@ jobs:
           echo "CONFIG_PACKAGE_kmod-mt7612e=y" >> .config
           make defconfig
 
-      - name: Compile firmware
+      - name: Download all source packages
         run: |
-          make -j$(nproc) V=s
+          make download -j1
+
+      - name: Compile firmware
+        continue-on-error: true
+        run: |
+          make -j1 V=s 2>&1 | tee build-log.txt
+
+      - name: Upload build log
+        uses: actions/upload-artifact@v4
+        with:
+          name: compile-log
+          path: build-log.txt
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: lede-newifi-d2
+          name: lede-newifi-d2-firmware
           path: bin/targets/ramips/mt7621/
