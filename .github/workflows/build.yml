@@ -1,4 +1,4 @@
-name: Build NewifiD2 OpenWrt
+name: Build NewifiD2
 on:
   push:
     branches: [ master ]
@@ -8,47 +8,33 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout OpenWrt source
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Install build dependencies
+      - name: Install deps
         run: |
           sudo apt update
           sudo apt install -y build-essential libncurses5-dev git python3 python3-pip unzip curl rsync wget time
 
-      - name: Generate .config for Newifi D2
+      - name: Config
         run: |
           cat > .config <<'EOF'
 CONFIG_TARGET_ramips=y
 CONFIG_TARGET_ramips_mt7621=y
 CONFIG_TARGET_ramips_mt7621_DEVICE_newifi_d2=y
-
 CONFIG_TARGET_ROOTFS_PARTSIZE=58
 CONFIG_TARGET_ROOTFS_SQUASHFS=y
-CONFIG_TARGET_ROOTFS_INITRAMFS=y
-
 CONFIG_PACKAGE_luci=y
-CONFIG_PACKAGE_luci-base=y
-CONFIG_PACKAGE_luci-compat=y
 CONFIG_PACKAGE_luci-i18n-zh-cn=y
-
 CONFIG_PACKAGE_kmod-mt7603=y
 CONFIG_PACKAGE_kmod-mt7612e=y
-CONFIG_PACKAGE_wireless-regdb=y
-
-CONFIG_PACKAGE_opkg=y
-CONFIG_PACKAGE_dropbear=y
-CONFIG_PACKAGE_tcpdump=y
-CONFIG_PACKAGE_iperf3=y
-CONFIG_PACKAGE_luci-app-statistics=y
 EOF
           make defconfig
 
-      - name: Compile firmware
-        run: |
-          make -j$(nproc) V=s
+      - name: Build
+        run: make -j$(nproc) V=s
 
-      - name: Upload firmware artifact
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: NewifiD2-Firmware
