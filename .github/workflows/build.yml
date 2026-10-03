@@ -16,25 +16,23 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential libncurses5-dev git python3 python3-pip unzip curl rsync wget time
 
-      - name: Config
+      - name: Write config
         run: |
-          cat > .config <<'EOF'
-CONFIG_TARGET_ramips=y
-CONFIG_TARGET_ramips_mt7621=y
-CONFIG_TARGET_ramips_mt7621_DEVICE_newifi_d2=y
-CONFIG_TARGET_ROOTFS_PARTSIZE=58
-CONFIG_TARGET_ROOTFS_SQUASHFS=y
-CONFIG_PACKAGE_luci=y
-CONFIG_PACKAGE_luci-i18n-zh-cn=y
-CONFIG_PACKAGE_kmod-mt7603=y
-CONFIG_PACKAGE_kmod-mt7612e=y
-EOF
+          echo "CONFIG_TARGET_ramips=y" > .config
+          echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
+          echo "CONFIG_TARGET_ramips_mt7621_DEVICE_newifi_d2=y" >> .config
+          echo "CONFIG_TARGET_ROOTFS_PARTSIZE=58" >> .config
+          echo "CONFIG_TARGET_ROOTFS_SQUASHFS=y" >> .config
+          echo "CONFIG_PACKAGE_luci=y" >> .config
+          echo "CONFIG_PACKAGE_luci-i18n-zh-cn=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-mt7603=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-mt7612e=y" >> .config
           make defconfig
 
-      - name: Build
+      - name: Build firmware
         run: make -j$(nproc) V=s
 
-      - name: Upload
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: NewifiD2-Firmware
