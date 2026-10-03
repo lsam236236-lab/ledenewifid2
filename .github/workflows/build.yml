@@ -20,7 +20,7 @@ jobs:
         run: |
           echo "CONFIG_TARGET_ramips=y" > .config
           echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
-          echo "CONFIG_TARGET_ramips_mt7621_DEVICE_newifi_d2=y" >> .config
+          echo "CONFIG_TARGET_ramips_mt7621_DEVICE_newifi_y1s=y" >> .config
           echo "CONFIG_TARGET_ROOTFS_PARTSIZE=58" >> .config
           echo "CONFIG_TARGET_ROOTFS_SQUASHFS=y" >> .config
           echo "CONFIG_PACKAGE_luci=y" >> .config
@@ -28,6 +28,7 @@ jobs:
           echo "CONFIG_PACKAGE_kmod-mt7603=y" >> .config
           echo "CONFIG_PACKAGE_kmod-mt7612e=y" >> .config
           make defconfig
+
 
       - name: Build firmware
         run: make -j$(nproc) V=s
