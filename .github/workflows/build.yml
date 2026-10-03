@@ -14,10 +14,10 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y build-essential libncurses5-dev git python3 python3-pip unzip curl rsync wget
-          # 拉取 OpenClash
-          git clone https://github.com/vernesong/OpenClash.git package/luci-app-openclash
-          # 拉取 ZeroTier
-          git clone https://github.com/rufengsuixing/luci-app-zerotier.git package/luci-app-zerotier
+          # 浅克隆 OpenClash，失败自动重试
+          for i in 1 2 3; do git clone --depth=1 https://github.com/vernesong/OpenClash.git package/luci-app-openclash && break; rm -rf package/luci-app-openclash; sleep 10; done
+          # 浅克隆 ZeroTier，失败自动重试
+          for i in 1 2 3; do git clone --depth=1 https://github.com/rufengsuixing/luci-app-zerotier.git package/luci-app-zerotier && break; rm -rf package/luci-app-zerotier; sleep 10; done
           cat > .config <<'EOF'
           CONFIG_TARGET_ramips=y
           CONFIG_TARGET_ramips_mt7621=y
