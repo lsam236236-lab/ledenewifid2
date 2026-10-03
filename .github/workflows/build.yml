@@ -1,40 +1,49 @@
-name: Build NewifiD2
+name: Build LEDE Newifi D2
 on:
   push:
     branches: [ master ]
-  workflow_dispatch:
+  workflow_dispatch: # 支持网页手动点击触发编译
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
+      - name: Expand disk space
+        run: |
+          df -h
+          sudo apt-get install -y parted
+          sudo parted /dev/sda resizepart 2 100%
+          sudo resize2fs /dev/sda2
+          df -h
+
       - name: Checkout source
         uses: actions/checkout@v4
+        # 如果你的lede源码不是放在仓库根目录，需要修改这里，默认根目录
 
-      - name: Install deps
+      - name: Install build dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential libncurses5-dev git python3 python3-pip unzip curl rsync wget time
+          sudo apt install -y build-essential libncurses-dev gawk flex bison \
+          git gettext libssl-dev xsltproc rsync wget unzip python3 python3-pip \
+          python3-setuptools python3-dev ccache libelf-dev
 
-      - name: Write config
+      - name: Generate .config for Newifi D2 (newifi_y1s)
         run: |
-          echo "CONFIG_TARGET_ramips=y" > .config
-          echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
-          echo "CONFIG_TARGET_ramips_mt7621_DEVICE_newifi_y1s=y" >> .config
+          make defconfig PROFILE=newifi_y1s
           echo "CONFIG_TARGET_ROOTFS_PARTSIZE=58" >> .config
-          echo "CONFIG_TARGET_ROOTFS_SQUASHFS=y" >> .config
           echo "CONFIG_PACKAGE_luci=y" >> .config
           echo "CONFIG_PACKAGE_luci-i18n-zh-cn=y" >> .config
           echo "CONFIG_PACKAGE_kmod-mt7603=y" >> .config
           echo "CONFIG_PACKAGE_kmod-mt7612e=y" >> .config
           make defconfig
-
+          cat .config # 打印配置，方便日志查看
 
       - name: Build firmware
-        run: make -j$(nproc) V=s
+        run: |
+          make -j$(nproc) V=s
 
-      - name: Upload Artifact
+      - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: NewifiD2-Firmware
-          path: bin/targets/ramips/mt7621/*.bin
+          name: lede-newifi-d2-firmware
+          path: bin/targets/ramips/mt7621/
