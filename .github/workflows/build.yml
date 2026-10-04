@@ -48,6 +48,12 @@ jobs:
         continue-on-error: true
         run: |
           make -j1 V=s 2>&1 | tee build-log.txt
+          
+      - name: Show compiled files
+        run: |
+          ls -la
+          ls -la bin/ || echo "bin文件夹不存在"
+          find ./bin -type f
 
       - name: Upload build log
         uses: actions/upload-artifact@v4
