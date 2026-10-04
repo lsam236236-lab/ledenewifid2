@@ -47,7 +47,9 @@ jobs:
           echo "CONFIG_PACKAGE_luci-app-zerotier=y" >> .config
           echo "CONFIG_PACKAGE_kmod-mt7603e=y" >> .config
           echo "CONFIG_PACKAGE_kmod-mt7612e=y" >> .config
-          make olddefconfig
+          echo "CONFIG_PACKAGE_luci-app-ttyd=y" >> .config
+          echo "CONFIG_PACKAGE_ttyd=y" >> .config
+          make defconfig
 
       - name: Download all source packages
         run: |
