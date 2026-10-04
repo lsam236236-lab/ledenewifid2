@@ -1,4 +1,4 @@
-name: Build LEDE NewifiD2
+name: Build ImmortalWrt NewifiD2
 on:
   push:
     branches: [ master ]
@@ -17,8 +17,12 @@ jobs:
           remove-android: 'true'
           remove-haskell: 'true'
 
-      - name: Checkout source
+      - name: Checkout ImmortalWrt source
         uses: actions/checkout@v4
+        with:
+          repository: immortalwrt/immortalwrt
+          ref: openwrt-24.10
+          depth: 1
 
       - name: Install dependencies
         run: |
@@ -30,18 +34,19 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Generate config
+      - name: Generate config (Newifi D2 d-team_newifi-d2)
         run: |
-          make defconfig PROFILE=newifi_y1s
-          echo "CONFIG_TARGET_ramips=y" >> .config
+          make defconfig
+          echo "CONFIG_TARGET_ramips=y" > .config
           echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
-          echo "CONFIG_TARGET_ramips_mt7621_DEVICE_newifi_y1s=y" >> .config
-          echo "CONFIG_TARGET_ROOTFS_PARTSIZE=58" >> .config
+          echo "CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y" >> .config
+          echo "CONFIG_TARGET_ROOTFS_PARTSIZE=64" >> .config
           echo "CONFIG_PACKAGE_luci=y" >> .config
           echo "CONFIG_PACKAGE_luci-i18n-zh-cn=y" >> .config
+          echo "CONFIG_PACKAGE_luci-app-zerotier=y" >> .config
           echo "CONFIG_PACKAGE_kmod-mt7603=y" >> .config
           echo "CONFIG_PACKAGE_kmod-mt7612e=y" >> .config
-          make defconfig
+          make oldconfig
 
       - name: Download all source packages
         run: |
@@ -67,6 +72,6 @@ jobs:
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: lede-newifi-d2-firmware
+          name: immortalwrt-newifi-d2-firmware
           path: bin/targets/ramips/mt7621/
           if-no-files-found: error
