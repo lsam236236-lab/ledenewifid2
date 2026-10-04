@@ -40,13 +40,14 @@ jobs:
           echo "CONFIG_TARGET_ramips=y" > .config
           echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
           echo "CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y" >> .config
-          echo "CONFIG_TARGET_ROOTFS_PARTSIZE=64" >> .config
+          echo "CONFIG_TARGET_KERNEL_PARTSIZE=4" >> .config
+          echo "CONFIG_TARGET_ROOTFS_PARTSIZE=60" >> .config
           echo "CONFIG_PACKAGE_luci=y" >> .config
           echo "CONFIG_PACKAGE_luci-i18n-zh-cn=y" >> .config
           echo "CONFIG_PACKAGE_luci-app-zerotier=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-mt7603=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-mt7603e=y" >> .config
           echo "CONFIG_PACKAGE_kmod-mt7612e=y" >> .config
-          make oldconfig
+          make olddefconfig
 
       - name: Download all source packages
         run: |
