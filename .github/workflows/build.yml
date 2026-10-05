@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: 扩容磁盘
+      - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
           root-reserve-mb: 512
@@ -17,22 +17,21 @@ jobs:
           remove-android: true
           remove-haskell: true
 
-      - name: 拉取源码
+      - name: Checkout source
         uses: actions/checkout@v4
         with:
           repository: immortalwrt-mt7621/immortalwrt
           ref: openwrt-24.10
           depth: 1
 
-      - name: 更新feeds
+      - name: Update feeds
         run: |
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: 替换DTS 64M分区 4M kernel +60M rootfs
+      - name: Overwrite DTS NewifiD2 64M
         run: |
-          DTS=target/linux/ramips/dts/mt7621_d-team_newifi-d2.dts
-          cat > $DTS <<'EOF'
+          cat > target/linux/ramips/dts/mt7621_d-team_newifi-d2.dts <<'EOF'
 // SPDX-License-Identifier: GPL-2.0-or-later
 /dts-v1/;
 #include <dt-bindings/gpio/gpio.h>
@@ -131,9 +130,9 @@ jobs:
 };
 EOF
 
-      - name: 生成.config配置
+      - name: Generate .config
         run: |
-          cat > .config <<'CONF'
+          cat > .config <<CONF
 CONFIG_TARGET_ramips=y
 CONFIG_TARGET_ramips_mt7621=y
 CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
@@ -151,23 +150,22 @@ CONFIG_PACKAGE_wget=y
 CONF
           make defconfig
 
-      - name: 下载源码包
+      - name: Download sources
         run: make download -j1
 
-      - name: 编译固件
+      - name: Build firmware
         run: make -j$(nproc) V=s 2>&1 | tee build.log
 
-      - name: 列出编译产物
-        run: |
-          ls -la bin/targets/ramips/mt7621/
+      - name: List bin files
+        run: ls -la bin/targets/ramips/mt7621/
 
-      - name: 上传固件
+      - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
           name: newifi-d2-64m-firmware
           path: bin/targets/ramips/mt7621/*.bin
 
-      - name: 上传编译日志
+      - name: Upload build log
         uses: actions/upload-artifact@v4
         with:
           name: build-log
