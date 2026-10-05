@@ -20,7 +20,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
         with:
-          repository: immortalwrt-mt7621/immortalwrt
+          repository: immortalwrt/immortalwrt
           ref: openwrt-24.10
           fetch-depth: 1
 
