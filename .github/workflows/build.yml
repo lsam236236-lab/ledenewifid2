@@ -24,15 +24,19 @@ jobs:
           ref: openwrt-24.10
           depth: 1
 
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y build-essential libncurses-dev gawk flex bison git gettext libssl-dev xsltproc rsync wget unzip python3 python3-pip python3-setuptools python3-dev ccache libelf-dev
-
-      - name: Update & Install feeds
+      - name: Update feeds
         run: |
           ./scripts/feeds update -a
           ./scripts/feeds install -a
+
+      - name: Patch DTS 修改NewifiD2分区 4M kernel +60M root
+        run: |
+          DTS_FILE=target/linux/ramips/dts/mt7621_d-team_newifi-d2.dts
+          # 修改kernel分区 4M: 0x00400000
+          sed -i 's/reg = <0x00000000 0x00200000>;/reg = <0x00000000 0x00400000>;/' $DTS_FILE
+          # 修改rootfs分区 60M: 0x03C00000
+          sed -i 's/reg = <0x00200000 0x03A00000>;/reg = <0x00400000 0x03C00000>;/' $DTS_FILE
+          cat $DTS_FILE
 
       - name: Generate config (Newifi D2 d-team_newifi-d2)
         run: |
@@ -64,17 +68,16 @@ jobs:
         run: |
           ls -la
           ls -la bin/ || echo "bin文件夹不存在"
-          find . -name "*.bin"
+          find ./bin -type f
 
       - name: Upload build log
         uses: actions/upload-artifact@v4
         with:
-          name: compile-log
+          name: build-log
           path: build-log.txt
 
-      - name: Upload firmware
+      - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: immortalwrt-newifi-d2-firmware
+          name: immortalwrt-newifid2-firmware
           path: bin/targets/ramips/mt7621/
-          if-no-files-found: error
