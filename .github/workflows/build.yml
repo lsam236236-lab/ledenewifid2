@@ -31,7 +31,7 @@ jobs:
 
       - name: Overwrite DTS NewifiD2 64M
         run: |
-          cat > target/linux/ramips/dts/mt7621_d-team_newifi-d2.dts <<'EOF'
+          cat > target/linux/ramips/dts/mt7621_d-team_newifi-d2.dts <<-EOF
 // SPDX-License-Identifier: GPL-2.0-or-later
 /dts-v1/;
 #include <dt-bindings/gpio/gpio.h>
