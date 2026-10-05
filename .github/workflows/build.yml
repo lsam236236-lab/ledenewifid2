@@ -143,6 +143,7 @@ jobs:
           echo 'CONFIG_PACKAGE_curl=y' >> .config
           echo 'CONFIG_PACKAGE_wget=y' >> .config
           make defconfig
+          make menuconfig -n
 
       - name: Download source packages
         run: make download -j1
@@ -150,16 +151,17 @@ jobs:
       - name: Build firmware
         run: make -j$(nproc) V=s 2>&1 | tee build.log
 
-      - name: Search all compiled bin files
+      - name: Check bin folder
         run: |
-          find . -name "*.bin"
-          ls -la ./bin || true
+          ls -la
+          ls -la bin || echo bin文件夹不存在
+          find ./bin -type f
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
           name: newifi-d2-64m-firmware
-          path: ./bin/**/*.bin
+          path: ./bin/targets/**/*.bin
 
       - name: Upload build log
         uses: actions/upload-artifact@v4
