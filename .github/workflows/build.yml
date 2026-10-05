@@ -131,12 +131,10 @@ jobs:
           echo 'CONFIG_TARGET_ramips=y' > .config
           echo 'CONFIG_TARGET_ramips_mt7621=y' >> .config
           echo 'CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y' >> .config
+          echo 'CONFIG_TARGET_IMAGES_GZIP=y' >> .config
           echo 'CONFIG_BUSYBOX_CUSTOM=y' >> .config
           echo 'CONFIG_TARGET_ROOTFS_SQUASHFS=y' >> .config
           echo 'CONFIG_TARGET_ROOTFS_PARTSIZE=60' >> .config
-          echo 'CONFIG_IB=y' >> .config
-          echo 'CONFIG_IB_STANDALONE=y' >> .config
-          echo 'CONFIG_IMAGEOPT=y' >> .config
           echo 'CONFIG_PACKAGE_luci=y' >> .config
           echo 'CONFIG_PACKAGE_luci-i18n-zh-cn=y' >> .config
           echo 'CONFIG_PACKAGE_luci-app-ttyd=y' >> .config
@@ -146,6 +144,7 @@ jobs:
           echo 'CONFIG_PACKAGE_curl=y' >> .config
           echo 'CONFIG_PACKAGE_wget=y' >> .config
           make defconfig
+          make -j1 prepare
 
       - name: Download source packages
         run: make download -j1
@@ -153,17 +152,17 @@ jobs:
       - name: Build firmware
         run: make -j$(nproc) V=s 2>&1 | tee build.log
 
-      - name: Show all files
+      - name: Show all generated firmware files
         run: |
-          ls -la
-          find ./ -name "*.bin"
-          find ./bin -type f
+          echo "==== Search all bin files ===="
+          find ./bin -name "*.bin"
+          ls -la ./bin/targets/ramips/mt7621/
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
           name: newifi-d2-64m-firmware
-          path: ./**/*.bin
+          path: ./bin/targets/ramips/mt7621/*.bin
 
       - name: Upload build log
         uses: actions/upload-artifact@v4
