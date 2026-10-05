@@ -22,7 +22,7 @@ jobs:
         with:
           repository: immortalwrt-mt7621/immortalwrt
           ref: openwrt-24.10
-          depth: 1
+          fetch-depth: 1
 
       - name: Update feeds
         run: |
