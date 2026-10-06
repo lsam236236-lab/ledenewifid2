@@ -21,6 +21,7 @@ jobs:
       - name: Generate config (CORRECT Newifi D2)
         run: |
           cd $GITHUB_WORKSPACE
+          rm -f .config
           echo "CONFIG_TARGET_ramips=y" > .config
           echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
           echo "CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_d-team_newifi-d2=y" >> .config
@@ -36,5 +37,5 @@ jobs:
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: newifi-d2-correct-firmware
+          name: newifi-d2-final-firmware
           path: bin/targets/ramips/mt7621/*.bin
