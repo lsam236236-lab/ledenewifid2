@@ -21,23 +21,19 @@ jobs:
       - name: Modify DTS partition size
         run: |
           cd $GITHUB_WORKSPACE
-          DTS_FILE=$(find target/linux/ramips/dts -name "*newifi*d2*.dts")
-          echo "DTS路径: $DTS_FILE"
-          cat $DTS_FILE | grep "reg = <0x050000"
-          sed -i 's/reg = <0x050000 0x1b00000>/reg = <0x050000 0x3b00000>/' $DTS_FILE
-          echo "修改后分区信息："
-          cat $DTS_FILE | grep "reg = <0x050000"
+          DTS_FILE=target/linux/ramips/dts/mt7621_d-team_newifi-d2.dts
+          echo "DTS文件: $DTS_FILE"
+          # 替换root分区长度 0x1b00000 → 0x3b00000
+          sed -i 's/0x1b00000/0x3b00000/' $DTS_FILE
+          echo "✅ DTS修改完成"
 
       - name: Generate .config
         run: |
           cd $GITHUB_WORKSPACE
           make defconfig
-          # 打印当前TARGET配置，排查设备名
-          grep "CONFIG_TARGET" .config | head -20
-          # 直接用make menuconfig的命令行配置，代替sed修改，更稳定
           echo "CONFIG_TARGET_ramips=y" >> .config
           echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
-          echo "CONFIG_TARGET_ramips_mt7621_NEWIFI_D2=y" >> .config
+          echo "CONFIG_TARGET_ramips_mt7621_D_TEAM_NEWIFI_D2=y" >> .config
           echo "CONFIG_PACKAGE_luci-app-zerotier=y" >> .config
           make olddefconfig
 
