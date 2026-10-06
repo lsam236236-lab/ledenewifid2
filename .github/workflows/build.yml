@@ -21,17 +21,9 @@ jobs:
       - name: Modify DTS partition size
         run: |
           cd $GITHUB_WORKSPACE
-          # 自动查找DTS文件，避免文件名写错
           DTS_FILE=$(find target/linux/ramips/dts -name "*newifi*d2*.dts")
           echo "找到DTS文件: $DTS_FILE"
-          # 替换分区大小
           sed -i 's/reg = <0x050000 0x1b00000>/reg = <0x050000 0x3b00000>/' $DTS_FILE
-
-      - name: Add plugins ZeroTier + OpenClash
-        run: |
-          cd $GITHUB_WORKSPACE
-          git clone https://github.com/immortalwrt/packages.git package/immortalwrt-packages
-          git clone https://github.com/moonshotyu/luci-app-openclash.git package/luci-app-openclash
 
       - name: Generate .config
         run: |
@@ -39,7 +31,6 @@ jobs:
           make defconfig
           sed -i 's/CONFIG_TARGET_ramips_mt7621_NEWIFI_D2=n/CONFIG_TARGET_ramips_mt7621_NEWIFI_D2=y/' .config
           echo "CONFIG_PACKAGE_luci-app-zerotier=y" >> .config
-          echo "CONFIG_PACKAGE_luci-app-openclash=y" >> .config
           make olddefconfig
 
       - name: Compile firmware
