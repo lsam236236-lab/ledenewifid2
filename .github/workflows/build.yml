@@ -18,103 +18,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3 python3-pip python3-setuptools python3-dev rsync unzip wget zlib1g-dev
 
-      - name: Create DTS patch
+      - name: Modify DTS firmware partition to 59M (sed)
         run: |
-          cat > dts.patch <<'EOF'
---- a/target/linux/ramips/dts/mt7621_newifi-d2.dts
-+++ b/target/linux/ramips/dts/mt7621_newifi-d2.dts
-@@ -1,104 +1,104 @@
- /dts-v1/;
-
- #include <dt-bindings/gpio/gpio.h>
- #include <dt-bindings/input/input.h>
-
- / {
-        compatible = "newifi,d2", "mediatek,mt7621";
-        model = "Newifi D2";
-
-        aliases {
-                led-boot = &led_power;
-                led-failsafe = &led_power;
-                led-running = &led_power;
-                led-upgrade = &led_power;
-                serial0 = &uart0;
-        };
-
-        chosen {
-                bootargs = "console=ttyS0,57600";
-        };
-
-        keys {
-                compatible = "gpio-keys";
-
-                reset {
-                        label = "reset";
-                        gpios = <&gpio0 18 GPIO_ACTIVE_LOW>;
-                        linux,code = <KEY_RESTART>;
-                };
-        };
-
-        leds {
-                compatible = "gpio-leds";
-                led_power: power {
-                        label = "white:power";
-                        gpios = <&gpio0 1 GPIO_ACTIVE_LOW>;
-                };
-        };
- };
-
- &spi0 {
-        status = "okay";
-        flash@0 {
-                compatible = "w25q64","jedec,spi-nor";
-                reg = <0>;
-                spi-max-frequency = <40000000>;
-
-                partitions {
-                        compatible = "fixed-partitions";
-                        #address-cells = <1>;
-                        #size-cells = <1>;
-
-                        partition@0 {
-                                label = "u-boot";
-                                reg = <0x000000 0x030000>;
-                                read-only;
-                        };
-                        partition@30000 {
-                                label = "u-boot-env";
-                                reg = <0x030000 0x010000>;
-                        };
-                        partition@40000 {
-                                label = "factory";
-                                reg = <0x040000 0x010000>;
-                                read-only;
-                        };
-                        partition@50000 {
-                                label = "firmware";
-                                reg = <0x050000 0x3b00000>;
-                        };
-                };
-        };
- };
-
- &uart0 {
-        status = "okay";
- };
-
- &pcie {
-        status = "okay";
- };
-
- &eth {
-        status = "okay";
-        mediatek,portmap = <0x3e>;
- };
-EOF
-
-      - name: Apply DTS patch
-        run: |
-          patch -p1 < dts.patch
+          DTS_FILE=target/linux/ramips/dts/mt7621_newifi-d2.dts
+          # 替换firmware分区大小为 0x3b00000
+          sed -i '/partition@50000 {/,/};/c\                        partition@50000 {\
+                                label = "firmware";\
+                                reg = <0x050000 0x3b00000>;\
+                        };' $DTS_FILE
 
       - name: Add plugins (ZeroTier + OpenClash)
         run: |
