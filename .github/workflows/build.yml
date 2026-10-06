@@ -1,171 +1,133 @@
 name: Build ImmortalWrt NewifiD2 64M
 on:
-  push:
-    branches: [ master ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 512
-          swap-size-mb: 1024
-          remove-dotnet: true
-          remove-android: true
-          remove-haskell: true
-
-      - name: Checkout ImmortalWrt source
+      - name: Checkout ImmortalWrt
         uses: actions/checkout@v4
         with:
           repository: immortalwrt/immortalwrt
-          ref: openwrt-24.10
-          fetch-depth: 1
+          ref: master
+          submodules: true
 
-      - name: Update feeds
+      - name: Install dependencies
         run: |
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3 python3-pip python3-setuptools python3-dev rsync unzip wget zlib1g-dev
 
-      - name: Overwrite DTS NewifiD2 64M
+      - name: Modify DTS Newifi D2 64M Flash
         run: |
-          echo '// SPDX-License-Identifier: GPL-2.0-or-later' > target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '/dts-v1/;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '#include <dt-bindings/gpio/gpio.h>' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '#include <dt-bindings/input/input.h>' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '#include "mt7621.dtsi"' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '/ {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	compatible = "newifi,d2", "mediatek,mt7621";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	model = "Newifi D2";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	aliases {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		led-boot = &led_status;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		led-failsafe = &led_status;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		led-running = &led_status;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		led-upgrade = &led_status;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	chosen {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		bootargs = "console=ttyS0,57600";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	keys {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		compatible = "gpio-keys";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		reset {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '			label = "reset";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '			gpios = <&gpio 18 GPIO_ACTIVE_LOW>;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '			linux,code = <KEY_RESTART>;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	leds {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		compatible = "gpio-leds";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		led_status: status {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '			label = "amber:status";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '			gpios = <&gpio 13 GPIO_ACTIVE_LOW>;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '&spi0 {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	status = "okay";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	flash@0 {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		compatible = "jedec,spi-nor";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		reg = <0>;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		spi-max-frequency = <50000000>;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		partitions {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '			compatible = "fixed-partitions";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '			#address-cells = <1>;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '			#size-cells = <1>;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '			partition@0 {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '				label = "u-boot";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '				reg = <0x00000000 0x00040000>;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '				read-only;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '			};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '			partition@40000 {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '				label = "kernel";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '				reg = <0x00040000 0x00400000>;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '			};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '			partition@440000 {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '				label = "rootfs";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '				reg = <0x00440000 0x03C00000>;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '			};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '			partition@4040000 {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '				label = "factory";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '				reg = <0x04040000 0x00020000>;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '				read-only;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '			};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '&ethernet {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	mtd-mac-address = <&factory 0x4>;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '&pcie {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	status = "okay";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '&pcie0 {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	wifi@0,0 {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		compatible = "mediatek,mt76";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		reg = <0x0000 0 0 0 0>;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		mediatek,mtd-eeprom = <&factory 0x0>;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '&pcie1 {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	wifi@0,0 {' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		compatible = "mediatek,mt76";' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		reg = <0x0000 0 0 0 0>;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '		mediatek,mtd-eeprom = <&factory 0x8000>;' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '	};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
-          echo '};' >> target/linux/ramips/dts/mt7621_newifi-d2.dts
+          cat > target/linux/ramips/dts/mt7621_newifi-d2.dts <<'EOF'
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+
+/ {
+	compatible = "newifi,d2", "mediatek,mt7621";
+	model = "Newifi D2";
+
+	aliases {
+		led-boot = &led_power;
+		led-failsafe = &led_power;
+		led-running = &led_power;
+		led-upgrade = &led_power;
+		serial0 = &uart0;
+	};
+
+	chosen {
+		bootargs = "console=ttyS0,57600";
+	};
+
+	keys {
+		compatible = "gpio-keys";
+
+		reset {
+			label = "reset";
+			gpios = <&gpio0 18 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_RESTART>;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led_power: power {
+			label = "white:power";
+			gpios = <&gpio0 1 GPIO_ACTIVE_LOW>;
+		};
+	};
+};
+
+&spi0 {
+	status = "okay";
+	flash@0 {
+		compatible = "w25q64","jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <40000000>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "u-boot";
+				reg = <0x000000 0x030000>;
+				read-only;
+			};
+			partition@30000 {
+				label = "u-boot-env";
+				reg = <0x030000 0x010000>;
+			};
+			partition@40000 {
+				label = "factory";
+				reg = <0x040000 0x010000>;
+				read-only;
+			};
+			partition@50000 {
+				label = "firmware";
+				reg = <0x050000 0x3b00000>;
+			};
+		};
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&pcie {
+	status = "okay";
+};
+
+&eth {
+	status = "okay";
+	mediatek,portmap = <0x3e>;
+};
+EOF
+
+      - name: Add plugins (ZeroTier + OpenClash)
+        run: |
+          git clone https://github.com/immortalwrt/packages.git package/immortalwrt-packages
+          git clone https://github.com/moonshotyu/luci-app-openclash.git package/luci-app-openclash
 
       - name: Generate .config
         run: |
-          echo 'CONFIG_TARGET_ramips=y' > .config
-          echo 'CONFIG_TARGET_ramips_mt7621=y' >> .config
-          echo 'CONFIG_TARGET_ramips_mt7621_DEVICE_newifi-d2=y' >> .config
-          echo 'CONFIG_TARGET_IMAGES_GZIP=y' >> .config
-          echo 'CONFIG_BUSYBOX_CUSTOM=y' >> .config
-          echo 'CONFIG_TARGET_ROOTFS_SQUASHFS=y' >> .config
-          echo 'CONFIG_TARGET_ROOTFS_PARTSIZE=60' >> .config
-          echo 'CONFIG_PACKAGE_luci=y' >> .config
-          echo 'CONFIG_PACKAGE_luci-i18n-zh-cn=y' >> .config
-          echo 'CONFIG_PACKAGE_luci-app-ttyd=y' >> .config
-          echo 'CONFIG_PACKAGE_ttyd=y' >> .config
-          echo 'CONFIG_PACKAGE_luci-app-zerotier=y' >> .config
-          echo 'CONFIG_PACKAGE_zerotier=y' >> .config
-          echo 'CONFIG_PACKAGE_curl=y' >> .config
-          echo 'CONFIG_PACKAGE_wget=y' >> .config
           make defconfig
-          make -j1 prepare
-
-      - name: Download source packages
-        run: make download -j1
+          sed -i 's/CONFIG_TARGET_ramips_mt7621_NEWIFI_D2=n/CONFIG_TARGET_ramips_mt7621_NEWIFI_D2=y/' .config
+          echo "CONFIG_PACKAGE_luci-app-zerotier=y" >> .config
+          echo "CONFIG_PACKAGE_luci-app-openclash=y" >> .config
+          make olddefconfig
 
       - name: Build firmware
-        run: make -j$(nproc) V=s 2>&1 | tee build.log
-
-      - name: Show all generated firmware files
         run: |
-          echo "==== Search all bin files ===="
-          find ./bin -name "*.bin"
-          ls -la ./bin/targets/ramips/mt7621/
+          make -j$(nproc)
 
-      - name: Upload firmware
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: newifi-d2-64m-firmware
-          path: ./bin/targets/ramips/mt7621/*.bin
-
-      - name: Upload build log
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log
-          path: build.log
+          name: firmware
+          path: bin/targets/ramips/mt7621/*.bin
