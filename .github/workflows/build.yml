@@ -1,4 +1,4 @@
-name: Build ImmortalWrt NewifiD2 ext4 64M Flash
+name: Build ImmortalWrt NewifiD2 Clean
 on:
   workflow_dispatch:
 
@@ -18,22 +18,12 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3 python3-pip python3-setuptools python3-dev rsync unzip wget zlib1g-dev
 
-      - name: Patch DTS disable mtdsplit
-        run: |
-          cd $GITHUB_WORKSPACE
-          DTS=target/linux/ramips/dts/mt7621_d-team_newifi-d2.dts
-          # 删除mtdsplit相关标记，关闭自动分区切割
-          sed -i '/compatible = "denx,uimage";/d' $DTS
-          # 修改firmware分区到整个剩余flash空间
-          sed -i 's/reg = <.*firmware.*>/reg = <0x50000 0x3b00000>;/' $DTS
-
-      - name: Generate config (ext4 rootfs)
+      - name: Generate config
         run: |
           cd $GITHUB_WORKSPACE
           echo "CONFIG_TARGET_ramips=y" > .config
           echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
           echo "CONFIG_TARGET_ramips_mt7621_D_TEAM_NEWIFI_D2=y" >> .config
-          echo "CONFIG_TARGET_ROOTFS_EXT4FS=y" >> .config
           echo "CONFIG_PACKAGE_luci=y" >> .config
           echo "CONFIG_PACKAGE_luci-app-zerotier=y" >> .config
           make defconfig
@@ -46,5 +36,5 @@ jobs:
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: newifi-d2-ext4-immortalwrt
+          name: newifi-d2-clean-firmware
           path: bin/targets/ramips/mt7621/*.bin
