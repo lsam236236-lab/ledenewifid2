@@ -1,4 +1,4 @@
-name: Build ImmortalWrt NewifiD2 Clean
+name: Build ImmortalWrt NewifiD2 Correct
 on:
   workflow_dispatch:
 
@@ -18,12 +18,12 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3 python3-pip python3-setuptools python3-dev rsync unzip wget zlib1g-dev
 
-      - name: Generate config
+      - name: Generate config (CORRECT Newifi D2)
         run: |
           cd $GITHUB_WORKSPACE
           echo "CONFIG_TARGET_ramips=y" > .config
           echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
-          echo "CONFIG_TARGET_ramips_mt7621_D_TEAM_NEWIFI_D2=y" >> .config
+          echo "CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_d-team_newifi-d2=y" >> .config
           echo "CONFIG_PACKAGE_luci=y" >> .config
           echo "CONFIG_PACKAGE_luci-app-zerotier=y" >> .config
           make defconfig
@@ -36,5 +36,5 @@ jobs:
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: newifi-d2-clean-firmware
+          name: newifi-d2-correct-firmware
           path: bin/targets/ramips/mt7621/*.bin
