@@ -18,18 +18,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3 python3-pip python3-setuptools python3-dev rsync unzip wget zlib1g-dev
 
-      - name: Modify DTS firmware partition size to ~60M
+      - name: Modify DTS partition size
         run: |
-          DTS=target/linux/ramips/dts/mt7621_newifi-d2.dts
-          sed -i 's/reg = <0x050000 0x1b00000>/reg = <0x050000 0x3b00000>/' $DTS
+          cd $GITHUB_WORKSPACE
+          # 自动查找DTS文件，避免文件名写错
+          DTS_FILE=$(find target/linux/ramips/dts -name "*newifi*d2*.dts")
+          echo "找到DTS文件: $DTS_FILE"
+          # 替换分区大小
+          sed -i 's/reg = <0x050000 0x1b00000>/reg = <0x050000 0x3b00000>/' $DTS_FILE
 
       - name: Add plugins ZeroTier + OpenClash
         run: |
+          cd $GITHUB_WORKSPACE
           git clone https://github.com/immortalwrt/packages.git package/immortalwrt-packages
           git clone https://github.com/moonshotyu/luci-app-openclash.git package/luci-app-openclash
 
       - name: Generate .config
         run: |
+          cd $GITHUB_WORKSPACE
           make defconfig
           sed -i 's/CONFIG_TARGET_ramips_mt7621_NEWIFI_D2=n/CONFIG_TARGET_ramips_mt7621_NEWIFI_D2=y/' .config
           echo "CONFIG_PACKAGE_luci-app-zerotier=y" >> .config
@@ -38,6 +44,7 @@ jobs:
 
       - name: Compile firmware
         run: |
+          cd $GITHUB_WORKSPACE
           make -j$(nproc)
 
       - name: Upload firmware bin
