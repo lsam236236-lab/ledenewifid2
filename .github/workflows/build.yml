@@ -1,4 +1,4 @@
-name: Build ImmortalWrt NewifiD2 64M
+name: Build ImmortalWrt NewifiD2 64M Flash
 on:
   workflow_dispatch:
 
@@ -13,37 +13,35 @@ jobs:
           ref: master
           submodules: true
 
-      - name: Install dependencies
+      - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3 python3-pip python3-setuptools python3-dev rsync unzip wget zlib1g-dev
 
-      - name: Modify DTS partition size
+      - name: Patch DTS enlarge root partition
         run: |
           cd $GITHUB_WORKSPACE
-          DTS_FILE=target/linux/ramips/dts/mt7621_d-team_newifi-d2.dts
-          echo "DTS文件: $DTS_FILE"
-          # 替换root分区长度 0x1b00000 → 0x3b00000
-          sed -i 's/0x1b00000/0x3b00000/' $DTS_FILE
-          echo "✅ DTS修改完成"
+          DTS=target/linux/ramips/dts/mt7621_d-team_newifi-d2.dts
+          sed -i 's/0x1b00000/0x3b00000/' $DTS
+          echo "DTS patched done"
 
-      - name: Generate .config
+      - name: Generate config via menuconfig (no manual .config edit)
         run: |
           cd $GITHUB_WORKSPACE
-          make defconfig
-          echo "CONFIG_TARGET_ramips=y" >> .config
+          # 选择目标平台 ramips mt7621 D-Team Newifi D2
+          echo "CONFIG_TARGET_ramips=y" > .config
           echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
           echo "CONFIG_TARGET_ramips_mt7621_D_TEAM_NEWIFI_D2=y" >> .config
           echo "CONFIG_PACKAGE_luci-app-zerotier=y" >> .config
-          make olddefconfig
+          make defconfig
 
       - name: Compile firmware
         run: |
           cd $GITHUB_WORKSPACE
           make -j$(nproc)
 
-      - name: Upload firmware bin
+      - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: firmware
+          name: newifi-d2-immortalwrt-60m-root
           path: bin/targets/ramips/mt7621/*.bin
