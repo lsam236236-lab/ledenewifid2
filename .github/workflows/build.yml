@@ -1,50 +1,10 @@
-name: Build ImmortalWrt NewifiD2 64M
+name: TestWorkflow
 on:
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04
+  test:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout ImmortalWrt
-        uses: actions/checkout@v4
-        with:
-          repository: immortalwrt/immortalwrt
-          ref: master
-          submodules: true
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3 python3-pip python3-setuptools python3-dev rsync unzip wget zlib1g-dev
-
-      - name: Modify DTS partition size
-        run: |
-          DTS=target/linux/ramips/dts/mt7621_newifi-d2.dts
-          sed -i '/partition@50000 {/,/};/c\                        partition@50000 {\
-                                label = "firmware";\
-                                reg = <0x050000 0x3b00000>;\
-                        };' $DTS
-
-      - name: Add plugins
-        run: |
-          git clone https://github.com/immortalwrt/packages.git package/immortalwrt-packages
-          git clone https://github.com/moonshotyu/luci-app-openclash.git package/luci-app-openclash
-
-      - name: Generate config
-        run: |
-          make defconfig
-          sed -i 's/CONFIG_TARGET_ramips_mt7621_NEWIFI_D2=n/CONFIG_TARGET_ramips_mt7621_NEWIFI_D2=y/' .config
-          echo "CONFIG_PACKAGE_luci-app-zerotier=y" >> .config
-          echo "CONFIG_PACKAGE_luci-app-openclash=y" >> .config
-          make olddefconfig
-
-      - name: Compile firmware
-        run: |
-          make -j$(nproc)
-
-      - name: Upload firmware
-        uses: actions/upload-artifact@v4
-        with:
-          name: firmware
-          path: bin/targets/ramips/mt7621/*.bin
+      - name: Hello
+        run: echo "OK"
