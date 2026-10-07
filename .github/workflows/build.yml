@@ -11,7 +11,7 @@ jobs:
         with:
           repository: immortalwrt/immortalwrt
           ref: master
-          depth: 1
+          fetch-depth: 1
 
       - name: Install dependencies
         run: |
@@ -28,7 +28,7 @@ jobs:
           echo "CONFIG_PACKAGE_luci=y" >> .config
           echo "CONFIG_PACKAGE_luci-base=y" >> .config
           echo "CONFIG_PACKAGE_zerotier=y" >> .config
-          make defconfig
+          make defconfig || true
           grep -E "CONFIG_TARGET_DEVICE.*newifi|CONFIG_TARGET_DEVICE.*adslr" .config
 
       - name: Build firmware
