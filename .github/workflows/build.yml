@@ -16,19 +16,25 @@ jobs:
       - name: Install full build dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential libncurses-dev gawk flex bison git gettext libssl-dev python3 python3-pip unzip libpam-dev libtirpc-dev liblzma-dev libzstd-dev libsnmp-dev libglib2.0-dev libgpiod-dev libev-dev lm-sensors wget
+          sudo apt install -y build-essential libncurses-dev gawk flex bison git gettext libssl-dev python3 python3-pip unzip libpam-dev libtirpc-dev liblzma-dev libzstd-dev libsnmp-dev libglib2.0-dev libgpiod-dev libev-dev lm-sensors
 
-      - name: Download official default config for d-team_newifi-d2
+      - name: Write base config for ramips mt7621 Newifi-D2
         run: |
           cd $GITHUB_WORKSPACE
           export TERM=dumb
           rm -f .config
-          # ImmortalWrt 官方预编译 Newifi D2 的 .config
-          wget https://github.com/immortalwrt/immortalwrt/raw/master/targets/ramips/mt7621/config -O .config
-          # 追加软件包
-          echo "CONFIG_PACKAGE_luci=y" >> .config
-          echo "CONFIG_PACKAGE_luci-base=y" >> .config
-          echo "CONFIG_PACKAGE_zerotier=y" >> .config
+          cat > .config <<'EOF'
+CONFIG_TARGET=ramips
+CONFIG_TARGET_SUBTARGET=mt7621
+CONFIG_TARGET_PROFILE="DEVICE_d-team_newifi-d2"
+CONFIG_TARGET_ARCH_PACKAGES=mipsel_24kc
+CONFIG_DEFAULT_TARGET_OPTIMIZATION="-Os -pipe -mno-branch-likely -mips32r2 -mtune=24kc"
+CONFIG_CPU_TYPE="24kc"
+CONFIG_LINUX_5_15=y
+CONFIG_PACKAGE_luci=y
+CONFIG_PACKAGE_luci-base=y
+CONFIG_PACKAGE_zerotier=y
+EOF
           make defconfig || true
           grep -E "CONFIG_TARGET|CONFIG_TARGET_PROFILE" .config
 
