@@ -18,10 +18,12 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential libncurses-dev gawk flex bison git gettext libssl-dev python3 python3-pip unzip libpam-dev libtirpc-dev liblzma-dev libzstd-dev libsnmp-dev libglib2.0-dev libgpiod-dev libev-dev lm-sensors
 
-      - name: Create config (non-interactive)
+      - name: Create config (non-interactive, mt7621 Newifi D2)
         run: |
           cd $GITHUB_WORKSPACE
           export TERM=dumb
+          # 清空旧配置，强制设置ramips mt7621
+          rm -f .config
           echo "CONFIG_TARGET=ramips" > .config
           echo "CONFIG_TARGET_SUBTARGET=mt7621" >> .config
           echo "CONFIG_TARGET_PROFILE=\"DEVICE_d-team_newifi-d2\"" >> .config
@@ -31,14 +33,15 @@ jobs:
           echo "CONFIG_PACKAGE_luci-base=y" >> .config
           echo "CONFIG_PACKAGE_zerotier=y" >> .config
           make defconfig || true
-          grep -E "CONFIG_TARGET_PROFILE|CONFIG_TARGET_DEVICE.*newifi" .config
+          # 打印校验，确认目标平台
+          grep -E "CONFIG_TARGET|CONFIG_TARGET_PROFILE" .config
 
       - name: Build firmware
         run: |
           cd $GITHUB_WORKSPACE
           export TERM=dumb
           make -j$(nproc)
-          # 查找所有编译出来的bin固件，打印路径
+          # 查找固件
           find ./bin -name "*.bin"
           ls -la ./bin
 
