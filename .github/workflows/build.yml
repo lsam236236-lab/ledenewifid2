@@ -16,23 +16,19 @@ jobs:
       - name: Install full build dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential libncurses-dev gawk flex bison git gettext libssl-dev python3 python3-pip unzip \
-          libpam-dev libtirpc-dev liblzma-dev libzstd-dev libsnmp-dev libglib2.0-dev libgpiod-dev libev-dev lm-sensors
+          sudo apt install -y build-essential libncurses-dev gawk flex bison git gettext libssl-dev python3 python3-pip unzip libpam-dev libtirpc-dev liblzma-dev libzstd-dev libsnmp-dev libglib2.0-dev libgpiod-dev libev-dev lm-sensors
 
       - name: Write .config manually
         run: |
           cd $GITHUB_WORKSPACE
-          cat > .config <<'EOF'
-CONFIG_TARGET=ramips
-CONFIG_TARGET_SUBTARGET=mt7621
-CONFIG_TARGET_PROFILE="DEVICE_d-team_newifi-d2"
-CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_d-team_newifi-d2=y
-# CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_adslr_g7 is not set
-CONFIG_PACKAGE_luci=y
-CONFIG_PACKAGE_luci-base=y
-CONFIG_PACKAGE_zerotier=y
-EOF
-          # 校验配置
+          echo "CONFIG_TARGET=ramips" > .config
+          echo "CONFIG_TARGET_SUBTARGET=mt7621" >> .config
+          echo "CONFIG_TARGET_PROFILE=\"DEVICE_d-team_newifi-d2\"" >> .config
+          echo "CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_d-team_newifi-d2=y" >> .config
+          echo "# CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_adslr_g7 is not set" >> .config
+          echo "CONFIG_PACKAGE_luci=y" >> .config
+          echo "CONFIG_PACKAGE_luci-base=y" >> .config
+          echo "CONFIG_PACKAGE_zerotier=y" >> .config
           grep -E "CONFIG_TARGET_PROFILE|CONFIG_TARGET_DEVICE.*newifi" .config
 
       - name: Build firmware
