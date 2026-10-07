@@ -38,9 +38,13 @@ jobs:
           cd $GITHUB_WORKSPACE
           export TERM=dumb
           make -j$(nproc)
+          # 查找所有编译出来的bin固件，打印路径
+          find ./bin -name "*.bin"
+          ls -la ./bin
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: firmware
-          path: bin/targets/ramips/mt7621/*.bin
+          path: |
+            ./bin/**/*.bin
