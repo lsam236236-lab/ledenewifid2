@@ -18,22 +18,18 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential libncurses-dev gawk flex bison git gettext libssl-dev python3 python3-pip unzip libpam-dev libtirpc-dev liblzma-dev libzstd-dev libsnmp-dev libglib2.0-dev libgpiod-dev libev-dev lm-sensors
 
-      - name: Create config (non-interactive, mt7621 Newifi D2)
+      - name: Force set target ramips mt7621 NewifiD2
         run: |
           cd $GITHUB_WORKSPACE
           export TERM=dumb
-          # 清空旧配置，强制设置ramips mt7621
           rm -f .config
-          echo "CONFIG_TARGET=ramips" > .config
-          echo "CONFIG_TARGET_SUBTARGET=mt7621" >> .config
-          echo "CONFIG_TARGET_PROFILE=\"DEVICE_d-team_newifi-d2\"" >> .config
-          echo "CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_d-team_newifi-d2=y" >> .config
-          echo "# CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_adslr_g7 is not set" >> .config
+          # 直接用脚本设置目标，immortalwrt支持这个指令
+          ./scripts/gen_config ramips mt7621 d-team_newifi-d2
           echo "CONFIG_PACKAGE_luci=y" >> .config
           echo "CONFIG_PACKAGE_luci-base=y" >> .config
           echo "CONFIG_PACKAGE_zerotier=y" >> .config
           make defconfig || true
-          # 打印校验，确认目标平台
+          # 打印校验，确认平台
           grep -E "CONFIG_TARGET|CONFIG_TARGET_PROFILE" .config
 
       - name: Build firmware
@@ -41,9 +37,8 @@ jobs:
           cd $GITHUB_WORKSPACE
           export TERM=dumb
           make -j$(nproc)
-          # 查找固件
           find ./bin -name "*.bin"
-          ls -la ./bin
+          ls -la ./bin/targets
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
