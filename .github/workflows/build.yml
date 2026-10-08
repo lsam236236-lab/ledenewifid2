@@ -17,37 +17,71 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3 python3-pip python3-setuptools python3-dev rsync unzip wget zlib1g-dev
 
-      - name: Modify DTS for 64M flash Newifi D2
+      - name: Create DTS patch
         run: |
-          cd target/linux/ramips/dts
-          sed -i '/partitions {/,/};/c\
-partitions {\
-    compatible = "fixed-partitions";\
-    #address-cells = <1>;\
-    #size-cells = <1>;\
-\
-    partition@0 {\
-        label = "u-boot";\
-        reg = <0x000000 0x040000>;\
-    };\
-    partition@40000 {\
-        label = "u-boot-env";\
-        reg = <0x040000 0x010000>;\
-    };\
-    partition@50000 {\
-        label = "kernel";\
-        reg = <0x050000 0x180000>;\
-    };\
-    partition@1d0000 {\
-        label = "rootfs";\
-        reg = <0x1d0000 0xf00000>;\
-    };\
-    partition@10d0000 {\
-        label = "rootfs_data";\
-        reg = <0x10d0000>;\
-    };\
-};' d-team_newifi-d2.dts
-          cd ../../../
+          cat > dts.patch <<'EOF'
+--- a/target/linux/ramips/dts/d-team_newifi-d2.dts
++++ b/target/linux/ramips/dts/d-team_newifi-d2.dts
+@@ -41,24 +41,21 @@
+ };
+
+ &spi0 {
+ 	status = "okay";
+
+ 	flash@0 {
+ 		compatible = "winbond,w25q64", "jedec,spi-nor";
+ 		reg = <0>;
+ 		spi-max-frequency = <10000000>;
+
+ 		partitions {
+ 			compatible = "fixed-partitions";
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+
+-			partition@0 {
+-				label = "u-boot";
+-				reg = <0x000000 0x040000>;
+-			};
+-			partition@40000 {
+-				label = "u-boot-env";
+-				reg = <0x040000 0x010000>;
+-			};
+-			partition@50000 {
+-				label = "kernel";
+-				reg = <0x050000 0x140000>;
+-			};
+-			partition@190000 {
+-				label = "rootfs";
+-				reg = <0x190000 0x670000>;
+-			};
++			partition@0 {
++				label = "u-boot";
++				reg = <0x000000 0x040000>;
++			};
++			partition@40000 {
++				label = "u-boot-env";
++				reg = <0x040000 0x010000>;
++			};
++			partition@50000 {
++				label = "kernel";
++				reg = <0x050000 0x180000>;
++			};
++			partition@1d0000 {
++				label = "rootfs";
++				reg = <0x1d0000 0xf00000>;
++			};
++			partition@10d0000 {
++				label = "rootfs_data";
++				reg = <0x10d0000>;
++			};
+ 		};
+ 	};
+ };
+EOF
+
+      - name: Apply DTS patch
+        run: |
+          patch -p1 < dts.patch
 
       - name: Config
         run: |
