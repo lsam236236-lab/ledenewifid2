@@ -25,20 +25,17 @@ jobs:
           cd $GITHUB_WORKSPACE/src
           make distclean
           rm -rf .config
-          cat > .config << EOF
-CONFIG_TARGET_ramips=y
-CONFIG_TARGET_ramips_mt7621=y
-CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
-CONFIG_PACKAGE_luci=y
-CONFIG_PACKAGE_luci-base=y
-CONFIG_PACKAGE_zerotier=y
-EOF
+          echo "CONFIG_TARGET_ramips=y" > .config
+          echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
+          echo "CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y" >> .config
+          echo "CONFIG_PACKAGE_luci=y" >> .config
+          echo "CONFIG_PACKAGE_luci-base=y" >> .config
+          echo "CONFIG_PACKAGE_zerotier=y" >> .config
           make defconfig
 
       - name: Patch DTS for 64M flash root 60M
         run: |
           cd $GITHUB_WORKSPACE/src
-          # ImmortalWrt DTS路径正确，修改分区
           sed -i 's/reg = <0x50000 0x1b00000>/reg = <0x50000 0x3b00000>/' target/linux/ramips/dts/mt7621_d-team_newifi-d2.dts
 
       - name: Compile
