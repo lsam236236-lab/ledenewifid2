@@ -17,13 +17,13 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3 python3-pip python3-setuptools python3-dev rsync unzip wget zlib1g-dev
 
-      - name: Download DTS patch
+      - name: Generate DTS patch locally
         run: |
-          wget -O dts.patch https://pastebin.com/raw/4kF68vLd
+          printf '--- a/target/linux/ramips/dts/d-team_newifi-d2.dts\n+++ b/target/linux/ramips/dts/d-team_newifi-d2.dts\n@@ -41,24 +41,21 @@\n };\n\n &spi0 {\n \tstatus = "okay";\n\n \tflash@0 {\n \t\tcompatible = "winbond,w25q64", "jedec,spi-nor";\n \t\treg = <0>;\n \t\tspi-max-frequency = <10000000>;\n\n \t\tpartitions {\n \t\t\tcompatible = "fixed-partitions";\n \t\t\t#address-cells = <1>;\n \t\t\t#size-cells = <1>;\n\n-\t\t\tpartition@0 {\n-\t\t\t\tlabel = "u-boot";\n-\t\t\t\treg = <0x000000 0x040000>;\n-\t\t\t};\n-\t\t\tpartition@40000 {\n-\t\t\t\tlabel = "u-boot-env";\n-\t\t\t\treg = <0x040000 0x010000>;\n-\t\t\t};\n-\t\t\tpartition@50000 {\n-\t\t\t\tlabel = "kernel";\n-\t\t\t\treg = <0x050000 0x140000>;\n-\t\t\t};\n-\t\t\tpartition@190000 {\n-\t\t\t\tlabel = "rootfs";\n-\t\t\t\treg = <0x190000 0x670000>;\n-\t\t\t};\n+\t\t\tpartition@0 {\n+\t\t\t\tlabel = "u-boot";\n+\t\t\t\treg = <0x000000 0x040000>;\n+\t\t\t};\n+\t\t\tpartition@40000 {\n+\t\t\t\tlabel = "u-boot-env";\n+\t\t\t\treg = <0x040000 0x010000>;\n+\t\t\t};\n+\t\t\tpartition@50000 {\n+\t\t\t\tlabel = "kernel";\n+\t\t\t\treg = <0x050000 0x180000>;\n+\t\t\t};\n+\t\t\tpartition@1d0000 {\n+\t\t\t\tlabel = "rootfs";\n+\t\t\t\treg = <0x1d0000 0xf00000>;\n+\t\t\t};\n+\t\t\tpartition@10d0000 {\n+\t\t\t\tlabel = "rootfs_data";\n+\t\t\t\treg = <0x10d0000>;\n+\t\t\t};\n \t\t};\n \t};\n };\n' > dts.patch
 
       - name: Apply DTS patch
         run: |
-          patch -p1 < dts.patch || echo "Patch apply failed"
+          patch -p1 < dts.patch
 
       - name: Config
         run: |
