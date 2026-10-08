@@ -1,4 +1,4 @@
-name: Build LEDE NewifiD2
+name: Build ImmortalWrt NewifiD2
 on:
   workflow_dispatch:
 
@@ -9,9 +9,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Clone LEDE
+      - name: Clone ImmortalWrt
         run: |
-          git clone https://github.com/coolsnowwolf/lede.git ./lede-src
+          git clone https://github.com/immortalwrt/immortalwrt.git ./lede-src
           cd ./lede-src
           git checkout master
 
@@ -31,11 +31,10 @@ jobs:
           echo "CONFIG_PACKAGE_luci=y" >> .config
           echo "CONFIG_PACKAGE_luci-base=y" >> .config
           echo "CONFIG_PACKAGE_zerotier=y" >> .config
-          echo "CONFIG_PACKAGE_lean-default-settings=n" >> .config
           make defconfig
           grep CONFIG_TARGET .config
 
-      - name: Patch DTS
+      - name: Patch DTS 扩容root到60M
         run: |
           cd $GITHUB_WORKSPACE/lede-src
           sed -i 's/reg = <0x50000 0x1b00000>/reg = <0x50000 0x3b00000>/' target/linux/ramips/dts/mt7621_d-team_newifi-d2.dts
@@ -48,5 +47,5 @@ jobs:
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: NewifiD2-FW
+          name: NewifiD2-ImmortalWrt-FW
           path: ./lede-src/bin/targets/ramips/mt7621/*.bin
