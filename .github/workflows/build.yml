@@ -31,6 +31,7 @@ jobs:
           echo "CONFIG_PACKAGE_luci=y" >> .config
           echo "CONFIG_PACKAGE_luci-base=y" >> .config
           echo "CONFIG_PACKAGE_zerotier=y" >> .config
+          echo "CONFIG_PACKAGE_lean-default-settings=n" >> .config
           make defconfig
           grep CONFIG_TARGET .config
 
