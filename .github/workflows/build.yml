@@ -102,8 +102,13 @@ EOF
         run: |
           make -j$(nproc)
 
+      - name: List compiled firmware files
+        run: |
+          find ./bin -name "*.bin"
+          ls -la bin/targets/ramips/mt7621/
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: NewifiD2-64M-ImmortalWrt
-          path: bin/targets/ramips/mt7621/immortalwrt-ramips-mt7621-d-team_newifi-d2-squashfs-sysupgrade.bin
+          path: bin/targets/ramips/mt7621/*.bin
