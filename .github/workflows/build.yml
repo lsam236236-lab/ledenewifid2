@@ -17,20 +17,17 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3 python3-pip python3-setuptools python3-dev rsync unzip wget zlib1g-dev
 
-      - name: Modify DTS newifi-d2.dts 单firmware大分区
-        run: |
-          DTS_FILE=target/linux/ramips/dts/newifi-d2.dts
-          sed -i '/partitions {/,/};/d' $DTS_FILE
-          sed -i 's/\t\tcompatible = "spi-flash";/\t\tcompatible = "spi-flash";\n        partitions {\n          partition@0 {\n            label = "u-boot";\n            reg = <0x000000 0x300000>;\n          };\n          partition@300000 {\n            label = "u-boot-env";\n            reg = <0x300000 0x100000>;\n          };\n          partition@400000 {\n            label = "factory";\n            reg = <0x400000 0x100000>;\n            read-only;\n          };\n          partition@500000 {\n            label = "firmware";\n            reg = <0x500000 0x1fb0000>;\n          };\n        };/' $DTS_FILE
-          cat $DTS_FILE
-
-      - name: Config
+      - name: Feeds update & install
         run: |
           ./scripts/feeds update -a
           ./scripts/feeds install -a
+
+      - name: Config and set root size 60M
+        run: |
           echo "CONFIG_TARGET_ramips=y" > .config
           echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
           echo "CONFIG_TARGET_ramips_mt7621_DEVICE_newifi-d2=y" >> .config
+          echo "CONFIG_TARGET_ROOTFS_PARTSIZE=60" >> .config
           echo "CONFIG_PACKAGE_luci=y" >> .config
           echo "CONFIG_PACKAGE_luci-base=y" >> .config
           echo "CONFIG_PACKAGE_luci-mod-admin-full=y" >> .config
