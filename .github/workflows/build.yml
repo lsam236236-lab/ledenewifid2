@@ -17,26 +17,28 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3 python3-pip python3-setuptools python3-dev rsync unzip wget zlib1g-dev
 
-      - name: Feeds update & install
+      - name: Feeds update & install（仅加载必要feed，排除video）
         run: |
           ./scripts/feeds update base packages luci
           ./scripts/feeds install base packages luci
 
-      - name: Generate config + set rootfs size 60M
+      - name: Generate default config and customize
         run: |
-          make clean
-          make menuconfig -y <<EOF
-          Target System: MediaTek Ralink MIPS
-          Subtarget: MT7621
-          Target Profile: Newifi D2
-          Target Root filesystem partition size (MiB): 60
-          LuCI -> Collections: luci
-          LuCI -> Modules: luci-mod-admin-full
-          Network -> ZeroTier: zerotier
-          Base system: opkg
-          Utilities -> e2fsprogs
-          EOF
+          # 生成基础默认配置
           make defconfig
+          # 目标：ramips mt7621 newifi-d2
+          sed -i 's/# CONFIG_TARGET_ramips is not set/CONFIG_TARGET_ramips=y/' .config
+          sed -i 's/# CONFIG_TARGET_ramips_mt7621 is not set/CONFIG_TARGET_ramips_mt7621=y/' .config
+          sed -i 's/# CONFIG_TARGET_ramips_mt7621_DEVICE_newifi-d2 is not set/CONFIG_TARGET_ramips_mt7621_DEVICE_newifi-d2=y/' .config
+          # 设置rootfs分区大小60MB
+          sed -i 's/.*CONFIG_TARGET_ROOTFS_PARTSIZE.*/CONFIG_TARGET_ROOTFS_PARTSIZE=60/' .config
+          # 开启需要软件包
+          sed -i 's/# CONFIG_PACKAGE_luci is not set/CONFIG_PACKAGE_luci=y/' .config
+          sed -i 's/# CONFIG_PACKAGE_luci-mod-admin-full is not set/CONFIG_PACKAGE_luci-mod-admin-full=y/' .config
+          sed -i 's/# CONFIG_PACKAGE_zerotier is not set/CONFIG_PACKAGE_zerotier=y/' .config
+          sed -i 's/# CONFIG_PACKAGE_e2fsprogs is not set/CONFIG_PACKAGE_e2fsprogs=y/' .config
+          # 应用配置，清理无效选项
+          make olddefconfig
 
       - name: Build firmware
         run: |
