@@ -21,26 +21,7 @@ jobs:
         run: |
           DTS_FILE=target/linux/ramips/dts/newifi-d2.dts
           sed -i '/partitions {/,/};/d' $DTS_FILE
-          sed -i '/\t\tcompatible = "spi-flash";/a\
-        partitions {\
-          partition@0 {\
-            label = "u-boot";\
-            reg = <0x000000 0x300000>;\
-          };\
-          partition@300000 {\
-            label = "u-boot-env";\
-            reg = <0x300000 0x100000>;\
-          };\
-          partition@400000 {\
-            label = "factory";\
-            reg = <0x400000 0x100000>;\
-            read-only;\
-          };\
-          partition@500000 {\
-            label = "firmware";\
-            reg = <0x500000 0x1fb0000>;\
-          };\
-        };' $DTS_FILE
+          sed -i 's/\t\tcompatible = "spi-flash";/\t\tcompatible = "spi-flash";\n        partitions {\n          partition@0 {\n            label = "u-boot";\n            reg = <0x000000 0x300000>;\n          };\n          partition@300000 {\n            label = "u-boot-env";\n            reg = <0x300000 0x100000>;\n          };\n          partition@400000 {\n            label = "factory";\n            reg = <0x400000 0x100000>;\n            read-only;\n          };\n          partition@500000 {\n            label = "firmware";\n            reg = <0x500000 0x1fb0000>;\n          };\n        };/' $DTS_FILE
           cat $DTS_FILE
 
       - name: Config
