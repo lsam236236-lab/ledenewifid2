@@ -19,22 +19,23 @@ jobs:
 
       - name: Feeds update & install
         run: |
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
+          ./scripts/feeds update base packages luci
+          ./scripts/feeds install base packages luci
 
-      - name: Config and set root size 60M
+      - name: Generate config + set rootfs size 60M
         run: |
-          echo "CONFIG_TARGET_ramips=y" > .config
-          echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
-          echo "CONFIG_TARGET_ramips_mt7621_DEVICE_newifi-d2=y" >> .config
-          echo "CONFIG_TARGET_ROOTFS_PARTSIZE=60" >> .config
-          echo "CONFIG_PACKAGE_luci=y" >> .config
-          echo "CONFIG_PACKAGE_luci-base=y" >> .config
-          echo "CONFIG_PACKAGE_luci-mod-admin-full=y" >> .config
-          echo "CONFIG_PACKAGE_uhttpd=y" >> .config
-          echo "CONFIG_PACKAGE_opkg=y" >> .config
-          echo "CONFIG_PACKAGE_zerotier=y" >> .config
-          echo "CONFIG_PACKAGE_e2fsprogs=y" >> .config
+          make clean
+          make menuconfig -y <<EOF
+          Target System: MediaTek Ralink MIPS
+          Subtarget: MT7621
+          Target Profile: Newifi D2
+          Target Root filesystem partition size (MiB): 60
+          LuCI -> Collections: luci
+          LuCI -> Modules: luci-mod-admin-full
+          Network -> ZeroTier: zerotier
+          Base system: opkg
+          Utilities -> e2fsprogs
+          EOF
           make defconfig
 
       - name: Build firmware
